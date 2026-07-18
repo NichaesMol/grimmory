@@ -116,7 +116,7 @@ public class RanobeDbParser implements BookParser {
         }
     }
 
-    public List<BookMetadata> getMetadataListByTerm(SearchTerms term, Boolean fetchTop) {
+    public List<BookMetadata> getMetadataListByTerm(SearchTerms term, boolean fetchTop) {
         log.info("Ranobedb: Fetching metadata for term: '{}'", term);
 
         List<BookMetadata> metadataList = getMetadataList(term, fetchTop);
@@ -130,7 +130,7 @@ public class RanobeDbParser implements BookParser {
         return Collections.emptyList();
     }
 
-    private @Nullable List<BookMetadata> getMetadataList(SearchTerms term, Boolean fetchTop) {
+    private @Nullable List<BookMetadata> getMetadataList(SearchTerms term, boolean fetchTop) {
         try {
             // Apply rate limiting before making the API request
             waitForRateLimit();
@@ -223,7 +223,7 @@ public class RanobeDbParser implements BookParser {
         return null;
     }
 
-    private List<BookMetadata> parseRanobeDbApiResponse(String responseBody, Boolean fetchTop) throws IOException {
+    private List<BookMetadata> parseRanobeDbApiResponse(String responseBody, boolean fetchTop) throws IOException {
         RanobedbSearchResponse searchResponse = objectMapper.readValue(responseBody, RanobedbSearchResponse.class);
         if (searchResponse.getBooks() == null) {
             return Collections.emptyList();
