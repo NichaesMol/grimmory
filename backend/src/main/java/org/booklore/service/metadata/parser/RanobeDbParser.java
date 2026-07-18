@@ -269,7 +269,7 @@ public class RanobeDbParser implements BookParser {
                 String bookLang = release != null ? release.getLang() : book.getLang();
 
                 RanobedbBookResponse.Publisher publisher = book.getPublishers().stream()
-                        .filter(p -> bookLang.equalsIgnoreCase(p.getLang()))
+                        .filter(p -> bookLang != null && bookLang.equalsIgnoreCase(p.getLang()))
                         .filter(p -> RanobedbBookResponse.PublisherType.PUBLISHER.equals(p.getPublisherType()))
                         .findFirst()
                         .orElse(null);
