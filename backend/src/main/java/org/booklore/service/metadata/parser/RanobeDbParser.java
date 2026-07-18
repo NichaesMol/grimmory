@@ -306,12 +306,15 @@ public class RanobeDbParser implements BookParser {
                 }
 
                 RanobedbBookResponse.Release release = book.getReleases().stream()
-                        .filter(r -> "en".equalsIgnoreCase(r.getLang()))
-                        .findFirst()
-                        .orElseGet(() -> book.getReleases().stream()
-                                .filter(r -> "ja".equalsIgnoreCase(r.getLang()))
-                                .findFirst()
-                                .orElse(null));
+                        .filter(Objects::nonNull)
+                        .min((ra, rb) -> {
+                            if (ra.equals(rb)) {
+                                return 0;
+                            }
+
+                            return "en".equalsIgnoreCase(ra.getLang()) ? 1 : -1;
+                        })
+                        .orElse(null);
 
                 String bookLang = release != null ? release.getLang() : book.getLang();
 
