@@ -13,7 +13,6 @@ import org.booklore.model.enums.MetadataProvider;
 import org.booklore.service.appsettings.AppSettingService;
 import org.booklore.util.BookUtils;
 import org.booklore.util.LanguageNormalizer;
-import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponentsBuilder;
 import tools.jackson.databind.ObjectMapper;
@@ -138,7 +137,7 @@ public class RanobeDbParser implements BookParser {
         return Collections.emptyList();
     }
 
-    private @Nullable List<BookMetadata> getMetadataList(SearchTerms term, boolean fetchTop) {
+    private List<BookMetadata> getMetadataList(SearchTerms term, boolean fetchTop) {
         try {
             // Apply rate limiting before making the API request
             waitForRateLimit();
