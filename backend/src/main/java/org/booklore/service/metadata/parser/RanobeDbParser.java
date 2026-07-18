@@ -1,5 +1,7 @@
 package org.booklore.service.metadata.parser;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.booklore.model.dto.Book;
@@ -21,6 +23,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.DateTimeException;
@@ -42,6 +45,10 @@ public class RanobeDbParser implements BookParser {
     private final ObjectMapper objectMapper;
     private final AppSettingService appSettingService;
     private final HttpClient httpClient = HttpClient.newHttpClient();
+    private final Cache<String, Integer> authorIds = Caffeine.newBuilder()
+            .maximumSize(500)
+            .expireAfterWrite(Duration.ofHours(1))
+            .build();
 
     // Rate limiter: 2 requests per second
     private static final int MAX_REQUESTS_PER_SECOND = 2;
@@ -188,6 +195,12 @@ public class RanobeDbParser implements BookParser {
         if (author == null || author.isEmpty()) {
             return null;
         }
+
+        Integer cachedAuthorId = authorIds.getIfPresent(author);
+        if (cachedAuthorId != null) {
+            return cachedAuthorId;
+        }
+
         try {
             // Apply rate limiting before making the API request
             waitForRateLimit();
