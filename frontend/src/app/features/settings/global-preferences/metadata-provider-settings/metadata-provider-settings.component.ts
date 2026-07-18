@@ -176,7 +176,7 @@ export class MetadataProviderSettingsComponent {
           ranobedb: {
             enabled: this.ranobedbEnabled,
             preferRomaji: this.ranobedbPreferRomaji
-            },
+          },
           audible: {
             enabled: this.audibleEnabled,
             domain: this.selectedAudibleDomain

@@ -158,7 +158,7 @@ public class RanobeDbParser implements BookParser {
       } catch (IOException | InterruptedException e) {
           log.error("Error fetching metadata from Ranobedb Search API", e);
       }
-        return null;
+      return null;
     }
 
     private SearchTerms getSearchTerm(Book book, FetchMetadataRequest request) {
