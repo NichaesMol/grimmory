@@ -25,9 +25,9 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.time.LocalDate;
-import java.time.YearMonth;
 import java.time.DateTimeException;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -129,7 +129,7 @@ public class RanobeDbParser implements BookParser {
 
         List<BookMetadata> metadataList = getMetadataList(term, fetchTop);
 
-        if (metadataList != null && metadataList.isEmpty() && term.authorId != null) {
+        if (metadataList != null && metadataList.isEmpty() && term.authorId() != null) {
             log.info("RanobeDB: Failed to find results with author, trying again with only the title.");
             metadataList = getMetadataList(new SearchTerms(term.title(), null), fetchTop);
         }
@@ -227,7 +227,7 @@ public class RanobeDbParser implements BookParser {
                 var staffArray = root.path("staff");
                 if (staffArray.isArray() && !staffArray.isEmpty()) {
                     var staffNode = staffArray.get(0).path("id");
-                    if (!staffNode.isInt()) {
+                    if (staffNode.isInt()) {
                         return staffNode.asInt();
                     }
                 }
@@ -273,11 +273,11 @@ public class RanobeDbParser implements BookParser {
     }
 
     private String getPreferredValue(String romaji, String normal) {
-        if (isPreferringRomaji() && romaji != null && romaji.isBlank()) {
+        if (isPreferringRomaji() && romaji != null && !romaji.isBlank()) {
             return romaji;
         }
 
-        if (normal != null && normal.isBlank()) {
+        if (normal != null && !normal.isBlank()) {
             return normal;
         }
 
@@ -313,13 +313,7 @@ public class RanobeDbParser implements BookParser {
 
                 RanobedbBookResponse.Release release = book.getReleases().stream()
                         .filter(Objects::nonNull)
-                        .min((ra, rb) -> {
-                            if (ra.equals(rb)) {
-                                return 0;
-                            }
-
-                            return "en".equalsIgnoreCase(ra.getLang()) ? 1 : -1;
-                        })
+                        .min(Comparator.comparingInt(r -> "en".equalsIgnoreCase(r.getLang()) ? 1 : -1))
                         .orElse(null);
 
                 String bookLang = release != null ? release.getLang() : book.getLang();
