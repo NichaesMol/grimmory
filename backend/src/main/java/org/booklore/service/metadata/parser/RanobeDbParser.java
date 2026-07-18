@@ -241,19 +241,44 @@ public class RanobeDbParser implements BookParser {
         if (searchResponse.getBooks() == null) {
             return Collections.emptyList();
         }
-        Boolean preferRomaji = appSettingService.getAppSettings().getMetadataProviderSettings().getRanobedb().isPreferRomaji();
 
         if (fetchTop && !searchResponse.getBooks().isEmpty()) {
-            BookMetadata topMetadata = searchResultToBookMetadata(searchResponse.getBooks().getFirst().getId(), preferRomaji);
+            BookMetadata topMetadata = searchResultToBookMetadata(searchResponse.getBooks().getFirst().getId());
             return topMetadata != null ? List.of(topMetadata) : Collections.emptyList();
         } else {
             return searchResponse.getBooks().stream()
-                    .map(book -> searchResultToBookMetadata(book.getId(), preferRomaji))
+                    .map(book -> searchResultToBookMetadata(book.getId()))
                     .toList();
         }
     }
 
-    private BookMetadata searchResultToBookMetadata(int bookId, Boolean preferRomaji) {
+    private boolean isPreferringRomaji() {
+        var appSettings = appSettingService.getAppSettings();
+
+        if (appSettings == null || appSettings.getMetadataProviderSettings() == null) {
+            return false;
+        }
+
+        var ranobedbSettings = appSettings.getMetadataProviderSettings().getRanobedb();
+
+        if (ranobedbSettings == null) {
+            return false;
+        }
+
+        return ranobedbSettings.isPreferRomaji();
+    }
+
+    private String getPreferredValue(String romaji, String normal) {
+        if (isPreferringRomaji() && romaji != null) {
+            return romaji;
+        } else if (normal != null) {
+            return normal;
+        } else {
+            return romaji;
+        }
+    }
+
+    private BookMetadata searchResultToBookMetadata(int bookId) {
 
         try {
             // Apply rate limiting before making the API request
@@ -298,11 +323,7 @@ public class RanobeDbParser implements BookParser {
 
                 String publisherName = null;
                 if (publisher != null) {
-                    if (preferRomaji) {
-                        publisherName = publisher.getRomaji() != null ? publisher.getRomaji() : publisher.getName();
-                    } else {
-                        publisherName = publisher.getName();
-                    }
+                    publisherName = getPreferredValue(publisher.getRomaji(), publisher.getName());
                 }
 
                 List<RanobedbBookResponse.SeriesBook> seriesBooks = book.getSeries() != null ? book.getSeries().getBooks() : List.of();
@@ -314,13 +335,7 @@ public class RanobeDbParser implements BookParser {
                 List<String> authors = book.getEditions().stream()
                         .flatMap(edition -> edition.getStaff().stream())
                         .filter(staff -> RanobedbBookResponse.RoleType.AUTHOR.equals(staff.getRoleType()))
-                        .map(staff -> {
-                            if (preferRomaji) {
-                                return staff.getRomaji() != null ? staff.getRomaji() : staff.getName();
-                            } else {
-                                return staff.getName() != null ? staff.getName() : staff.getRomaji();
-                            }
-                        })
+                        .map(staff -> getPreferredValue(staff.getRomaji(), staff.getName()))
                         .toList();
 
                 HashSet<String> genres = book.getSeries() != null ? book.getSeries().getTags().stream()
@@ -331,9 +346,9 @@ public class RanobeDbParser implements BookParser {
 
                 String title;
                 if (release != null) {
-                    title = preferRomaji && release.getRomaji() != null? release.getRomaji() : release.getTitle();
+                    title = getPreferredValue(release.getRomaji(), release.getTitle());
                 } else {
-                    title = preferRomaji && book.getRomaji() != null ? book.getRomaji() : book.getTitle();
+                    title = getPreferredValue(book.getRomaji(), book.getTitle());
                 }
 
                 String subtitle = null;
