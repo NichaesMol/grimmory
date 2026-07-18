@@ -228,6 +228,7 @@ public class RanobeDbParser implements BookParser {
                 if (staffArray.isArray() && !staffArray.isEmpty()) {
                     var staffNode = staffArray.get(0).path("id");
                     if (staffNode.isInt()) {
+                        authorIds.put(author, staffNode.asInt());
                         return staffNode.asInt();
                     }
                 }
