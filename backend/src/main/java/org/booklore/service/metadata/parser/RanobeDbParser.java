@@ -363,6 +363,13 @@ public class RanobeDbParser implements BookParser {
         if (dateInt == null || dateInt == 0) {
             return null;
         }
+
+        if (dateInt < 9999) {
+            dateInt = (dateInt * 10000) + 101;
+        } else if (dateInt < 999999) {
+            dateInt = (dateInt * 100) + 1;
+        }
+
         // Parse date from integer of the format (YYYYMMDD)
         int year = (int) (dateInt / 10000);
         int month = (int) ((dateInt / 100) % 100);
@@ -371,14 +378,6 @@ public class RanobeDbParser implements BookParser {
         try {
             return LocalDate.of(year, month, day);
         } catch (DateTimeException ignored) {
-        }
-        // try to account for missing day/month
-        try {
-            month = (month >= 1 && month <= 12) ? month : 1;
-            int maxDay = YearMonth.of(year, month).lengthOfMonth();
-            day = (day >= 1 && day <= maxDay) ? day : 1;
-            return LocalDate.of(year, month, day);
-        } catch (DateTimeException e) {
             log.debug("Could not parse date: {}", dateInt);
             return null;
         }
