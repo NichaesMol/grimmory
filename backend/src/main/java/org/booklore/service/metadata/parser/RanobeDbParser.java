@@ -269,13 +269,15 @@ public class RanobeDbParser implements BookParser {
     }
 
     private String getPreferredValue(String romaji, String normal) {
-        if (isPreferringRomaji() && romaji != null) {
-            return romaji;
-        } else if (normal != null) {
-            return normal;
-        } else {
+        if (isPreferringRomaji() && romaji != null && romaji.isBlank()) {
             return romaji;
         }
+
+        if (normal != null && normal.isBlank()) {
+            return normal;
+        }
+
+        return romaji;
     }
 
     private BookMetadata searchResultToBookMetadata(int bookId) {
