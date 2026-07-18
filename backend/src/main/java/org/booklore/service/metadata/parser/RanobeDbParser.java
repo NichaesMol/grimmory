@@ -225,7 +225,10 @@ public class RanobeDbParser implements BookParser {
                 var root = objectMapper.readTree(response.body());
                 var staffArray = root.path("staff");
                 if (staffArray.isArray() && !staffArray.isEmpty()) {
-                    return staffArray.get(0).path("id").asInt();
+                    var staffNode = staffArray.get(0).path("id");
+                    if (!staffNode.isInt()) {
+                        return staffNode.asInt();
+                    }
                 }
             } else {
                 log.error("Ranobedb Staff API returned status code {}", response.statusCode());
