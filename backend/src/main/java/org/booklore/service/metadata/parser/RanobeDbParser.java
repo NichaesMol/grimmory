@@ -123,7 +123,7 @@ public class RanobeDbParser implements BookParser {
         }
     }
 
-    public List<BookMetadata> getMetadataListByTerm(SearchTerms term, boolean fetchTop) {
+    private List<BookMetadata> getMetadataListByTerm(SearchTerms term, boolean fetchTop) {
         log.info("Ranobedb: Fetching metadata for term: '{}'", term);
 
         List<BookMetadata> metadataList = getMetadataList(term, fetchTop);
